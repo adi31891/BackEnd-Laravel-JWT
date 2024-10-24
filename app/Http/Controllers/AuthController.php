@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Http\Requests\Auth\SignUpRequest;
+use App\Http\Requests\Auth\SignInRequest;
 
 class AuthController extends Controller
 {
@@ -53,5 +54,46 @@ class AuthController extends Controller
                 ]
             ] ,
         ]);
+    }
+
+    Public function signIn(SignInRequest $request)
+    {
+        $token = auth()->attempt($request->all());
+
+        if(!$token)
+        {
+            return response()->json([
+                'meta' => [
+                    'code' => 401,
+                    'status' => 'error',
+                    'message' => 'Incorect email or password',
+                ],
+                'data' => [],
+            ],401);
+        }
+
+        $user = auth()->user();
+
+        return response()->json([
+            'meta' => [
+                'code' => 200,
+                'status' => 'success',
+                'message' => 'Signed in Successfully'
+            ],
+            'data' => [
+                'user' => [
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'picture' => $user->picture,
+
+
+                ],
+                'access_token' => [
+                    'token' => $token,
+                    'type' => 'Bearer',
+                    'expires_in' => strtotime('+' . auth()->factory()->getTTL() . 'minutes'),
+                ]
+            ],
+        ], 200);
     }
 }
