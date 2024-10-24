@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Http\Requests\Auth\SignUpRequest;
 use App\Http\Requests\Auth\SignInRequest;
+// use Illuminate\Contracts\Auth\Authenticatable;
+
+// use PhpOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
 class AuthController extends Controller
 {
@@ -109,6 +112,32 @@ class AuthController extends Controller
             ],
             'data' => [],
 
+        ]);
+    }
+
+    public function refresh()
+    {
+        $user = auth()->user();
+        $token = auth()->fromUser($user);
+
+        return response()->json([
+            'meta' => [
+                'code' => 200,
+                'status' => 'success',
+                'message' => 'Token refreshed successfully.',
+            ],
+            'data' => [
+                'user' => [
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'picture' => $user->picture,
+                ],
+                'access_token' => [
+                    'token' => $token,
+                    'type' => 'Bearer',
+                    'expires_in' => strtotime('+' . auth()->factory()->getTTL() . ' minutes'),
+                ]
+            ],
         ]);
     }
 }
