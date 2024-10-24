@@ -58,7 +58,7 @@ class AuthController extends Controller
 
     Public function signIn(SignInRequest $request)
     {
-        $token = auth()->attempt($request->all());
+        $token = auth()->attempt($request->validated());
 
         if(!$token)
         {
@@ -95,5 +95,20 @@ class AuthController extends Controller
                 ]
             ],
         ], 200);
+    }
+
+    public function signOut()
+    {
+        auth()->logout();
+
+        return response()->json([
+            'meta' => [
+                'code' =>200,
+                'status' => 'success',
+                'message' => 'Signed out successfully',
+            ],
+            'data' => [],
+
+        ]);
     }
 }
