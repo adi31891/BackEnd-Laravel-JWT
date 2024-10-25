@@ -24,6 +24,9 @@ Route::middleware('auth:api')->group(function() {
     Route::prefix('/me')->group(function(){
         Route::get('/profile', [ProfileController::class, 'show']);
 
+        //untuk update data pake put
+        Route::put('/profile', [ProfileController::class, 'update']);
+
     });
 
 
