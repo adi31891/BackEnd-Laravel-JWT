@@ -9,9 +9,47 @@ use Str;
 use ImageKit\ImageKit;
 use App\Models\User;
 use GrahamCampbell\ResultType\Success;
+use App\Models\Article;
 
 class ArticleController extends Controller
 {
+
+    public function index()
+    {
+        $userId = auth()->id();
+
+
+        $articles = Article::with(['category', 'user:id,name,email,picture'])->select([
+            'id',
+            'user_id',
+            'category_id',
+            'title',
+            'slug',
+            'content_preview',
+            
+            'featured_image',
+            'created_at',
+            'updated_at',
+        ])
+            ->where('user_id', $userId)
+            ->paginate();
+
+        return response()->json([
+            'meta' => [
+                'code' => 200,
+                'status' => 'success',
+                'message'=> 'Article fetched succesfuly',
+
+            ],
+            'data' => $articles,
+            ]);
+        
+        
+    }
+
+
+
+
     public function store(StoreRequest $request)
     {
         $validated = $request->validated();
