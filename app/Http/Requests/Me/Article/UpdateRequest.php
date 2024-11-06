@@ -2,15 +2,14 @@
 
 namespace App\Http\Requests\Me\Article;
 
-use App\Models\Category;
-use Illuminate\Validation\Rule;
-use App\Traits\ErrorResponseJson;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Traits\ErrorResponseJson;
+use Illuminate\Validation\Rule;
+use App\Models\Category;
 
-class StoreRequest extends FormRequest
+class UpdateRequest extends FormRequest
 {
     use ErrorResponseJson;
-
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -29,19 +28,17 @@ class StoreRequest extends FormRequest
     public function rules()
     {
         return [
-            'category_id' => 'required|' . Rule::in(Category::class::pluck('id')),
+            'category_id' => 'required|' . Rule::in(Category::pluck('id')),
             'title' => 'required|string|max:190',
-            'content' =>'required|string',
-            'featured_image' => 'required|image|mimes:png,jpg,jpeg.bmp',
+            'content' => 'required|string',
+            'featured_image' => 'nullable|image|mimes:jgp,jpeg,bmp,png',
         ];
     }
 
     public function attributes()
     {
         return [
-            'category_id' => 'category',
+            'category_id' => 'category'
         ];
     }
-
-    
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Me;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\Me\Article\StoreRequest;
+use App\Http\Requests\Me\Article\UpdateRequest;
 use Str;
 use ImageKit\ImageKit;
 use App\Models\User;
@@ -151,5 +152,89 @@ class ArticleController extends Controller
             'data' => []
         ], 404);
 
+    }
+
+    public function update(UpdateRequest $request, $id)
+    {
+        $article = Article::find($id);
+
+        if ($article)
+        {
+            $userId = auth()->id();
+
+            if ($article->user_id === $userId)
+            {
+                $validated = $request->validated();
+
+                $validated['slug'] = Str::of($validated['title'])->slug('-') . '-' . time();
+                $validated['content_preview'] = substr($validated['content'], 0 ,218) . '...';
+
+                if ($request->hasFile('featured_imaged'))
+                {
+                    $imageKit = new ImageKit(
+                        env('IMAGEKIT_PUBLIC_KEY'),
+                        env('IMAGEKIT_PRIVATE_KEY'),
+                        env('IMAGEKIT_URL_ENDPOINT'),
+                    );
+
+                    $image = base64_encode(file_get_contents($request->file('featured_image')));
+
+                    $uploadimage = $imageKit->uploadFile([
+                        'file' => $image,
+                        'filename' => $validated('slug'),
+                        'folder' => '/article',
+                    ]);
+
+                    $validated['featured_image'] = $uploadimage->result->url;
+                }
+
+                $updateArticle = $article->update($validated);
+
+                if ($updateArticle)
+                {
+                    return response()->json([
+                        'meta' => [
+                            'code' => 200,
+                            'status' => 'success',
+                            'message' => 'Article updated successfully.',
+
+                        ],
+                        'data' => [
+
+                        ],
+                    ]);
+                }
+
+                return response()->json([
+                    'meta' => [
+                        'code' => 500,
+                        'status' => 'error',
+                        'message' => 'Error! Article failed to update.',
+                    ],
+                    'data' => [],
+                ], 500);
+            }
+
+            return response()->json([
+                'meta' => [
+                    'code' => 401,
+                    'status' => 'error',
+                    'message' => 'Unauthorized.',
+
+                ],
+                'data' => [
+
+                ],
+            ], 401);
+        }
+
+        return response()->json([
+            'meta' => [
+                'code' => 404,
+                'status' => 'error',
+                'message' => 'Article not found.',
+            ],
+            'data'=>[],
+        ], 404);
     }
 }
