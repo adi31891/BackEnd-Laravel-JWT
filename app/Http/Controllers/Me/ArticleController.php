@@ -237,4 +237,58 @@ class ArticleController extends Controller
             'data'=>[],
         ], 404);
     }
+
+    public function destroy($id)
+    {
+        $article = Article::find($id);
+
+        if ($article)
+        {
+            $userId = auth()->id();
+
+            if ($article->user_id === $userId)
+            {
+                $deleteArticle = $article->delete();
+
+                if ($deleteArticle)
+                {
+                    return response()->json([
+                        'meta' => [
+                            'code' => 200,
+                            'status' => 'success',
+                            'message' => 'Article deleted successfully.',
+                        ],
+                        'data' => [],   
+                    ], 200);
+                }
+
+                return response()->json([
+                    'meta' => [
+                        'code' => 500,
+                        'status' => 'error',
+                        'message' => 'Error! Article failed to delete.',
+                    ],
+                    'data' => [],
+                ], 500);
+            }
+
+            return response()->json([
+                'meta' => [
+                        'code' => 401,
+                        'status' => 'error',
+                        'message' => 'Unaurhorized.',
+                    ],
+                    'data' => [],
+            ], 401);
+        }
+
+        return response()->json([
+            'meta' => [
+                'code' => 404,
+                'status' => 'error',
+                'message' => 'Article not found.',
+            ],
+            'data' => [],
+        ], 404);
+    }
 }
